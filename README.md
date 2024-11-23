@@ -186,7 +186,7 @@ then CDC might work and MSC will not work;
 otherwise, if you have no drivers, MSC will work, and CDC will work on Windows 10 only.
 Thus, it's best to set the USB ID to one for which there are no drivers.
 
-The bootloader sits at 0x00000000, and the application starts at 0x00002000 (SAMD21) or 0x00004000 (SAMD51).
+The bootloader sits at 0x00000000, and the application starts at 0x00002000 (SAMD21) or 0x00004000 (SAMD51) or 0x00006000 (SAML21).
 
 ## Code of Conduct
 
