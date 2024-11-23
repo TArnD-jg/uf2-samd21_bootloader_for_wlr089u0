@@ -153,7 +153,7 @@
 #define COLOR_START 0x000040
 #define COLOR_USB 0x004000
 #define COLOR_UART 0x404000
-#define COLOR_LEAVE 0x000000
+#define COLOR_LEAVE 0x400040
 #endif
 
 /*
@@ -243,6 +243,9 @@ void padded_memcpy(char *dst, const char *src, int len);
 #ifdef SAMD21
 #define DBL_TAP_PTR ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
 #endif
+#ifdef SAML21
+#define DBL_TAP_PTR ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
+#endif
 #ifdef SAMD51
 #define DBL_TAP_PTR ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
@@ -253,6 +256,9 @@ void padded_memcpy(char *dst, const char *src, int len);
 #ifdef SAMD21
 #define SINGLE_RESET() (*((uint32_t *)0x20B4) == 0x87eeb07c)
 #endif
+#ifdef SAML21
+#define SINGLE_RESET() (*((uint32_t *)0x20B4) == 0x87eeb07c)
+#endif
 #ifdef SAMD51
 #define SINGLE_RESET() (*((uint32_t *)0x4268) == 0x87eeb07c)
 #endif
@@ -260,13 +266,14 @@ void padded_memcpy(char *dst, const char *src, int len);
 
 void resetIntoApp(void);
 void resetIntoBootloader(void);
-extern uint32_t current_cpu_frequency_MHz;
-extern volatile bool led_tick_on;
 void system_init(void);
 
 #define LED_TICK led_tick
 
 #define PINOP(pin, OP) (PORT->Group[(pin) / 32].OP.reg = (1 << ((pin) % 32)))
+#define PINIP(pin) (((PORT->Group[(pin) / 32].IN.reg) >> ((pin) % 32)) & 0x1)
+#define PINCFG(pin) (PORT->Group[(pin) / 32].PINCFG[(pin) % 32].reg)
+#define PINMUX(pin) (PORT->Group[(pin) / 32].PMUX[((pin) % 32)/2].reg)
 
 void led_tick(void);
 void led_signal(void);
@@ -275,13 +282,8 @@ void RGBLED_set_color(uint32_t color);
 
 // Not all targets have a LED
 #if defined(LED_PIN)
-#if !defined(LED_PIN_PULLUP)
 #define LED_MSC_OFF() PINOP(LED_PIN, OUTCLR)
 #define LED_MSC_ON() PINOP(LED_PIN, OUTSET)
-#else
-#define LED_MSC_OFF() PINOP(LED_PIN, OUTSET)
-#define LED_MSC_ON() PINOP(LED_PIN, OUTCLR)
-#endif
 #define LED_MSC_TGL() PINOP(LED_PIN, OUTTGL)
 #else
 #define LED_MSC_OFF()
@@ -289,49 +291,11 @@ void RGBLED_set_color(uint32_t color);
 #define LED_MSC_TGL()
 #endif
 
-// Not all targets have a TX LED
-#if defined(LED_TX_PIN)
-#if defined(LED_TX_PIN_PULLUP)
-#define LED_TX_OFF() PINOP(LED_TX_PIN, OUTSET)
-#define LED_TX_ON() PINOP(LED_TX_PIN, OUTCLR)
-#else
-#define LED_TX_OFF() PINOP(LED_TX_PIN, OUTCLR)
-#define LED_TX_ON() PINOP(LED_TX_PIN, OUTSET)
-#endif
-#define LED_TX_TGL() PINOP(LED_TX_PIN, OUTTGL)
-#else
-#define LED_TX_OFF()
-#define LED_TX_ON()
-#define LED_TX_TGL()
-#endif
-
-// Not all targets have a RX LED
-#if defined(LED_RX_PIN)
-#if defined(LED_RX_PIN_PULLUP)
-#define LED_RX_OFF() PINOP(LED_RX_PIN, OUTSET)
-#define LED_RX_ON() PINOP(LED_RX_PIN, OUTCLR)
-#else
-#define LED_RX_OFF() PINOP(LED_RX_PIN, OUTCLR)
-#define LED_RX_ON() PINOP(LED_RX_PIN, OUTSET)
-#endif
-#define LED_RX_TGL() PINOP(LED_RX_PIN, OUTTGL)
-#else
-#define LED_RX_OFF()
-#define LED_RX_ON()
-#define LED_RX_TGL()
-#endif
-
 extern uint32_t timerHigh, resetHorizon;
 void timerTick(void);
 void delay(uint32_t ms);
 void hidHandoverLoop(int ep);
 void handoverPrep(void);
-
-// Useful for debugging.
-#ifdef BLINK_DEBUG
-void blink_n(uint32_t pin, uint32_t n, uint32_t interval);
-void blink_n_forever(uint32_t pin, uint32_t n, uint32_t interval);
-#endif
 
 #define CONCAT_1(a, b) a##b
 #define CONCAT_0(a, b) CONCAT_1(a, b)
@@ -342,7 +306,11 @@ STATIC_ASSERT(FLASH_ROW_SIZE == FLASH_PAGE_SIZE * 4);
 STATIC_ASSERT(FLASH_ROW_SIZE == NVMCTRL_ROW_SIZE);
 STATIC_ASSERT(FLASH_NUM_ROWS * 4 == FLASH_NB_OF_PAGES);
 #endif
-
+#ifdef SAML21
+STATIC_ASSERT(FLASH_ROW_SIZE == FLASH_PAGE_SIZE * 4);
+STATIC_ASSERT(FLASH_ROW_SIZE == NVMCTRL_ROW_SIZE);
+STATIC_ASSERT(FLASH_NUM_ROWS * 4 == FLASH_NB_OF_PAGES);
+#endif
 extern const char infoUf2File[];
 
 #if USE_SCREEN

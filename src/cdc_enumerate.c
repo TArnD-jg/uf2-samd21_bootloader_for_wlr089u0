@@ -388,6 +388,10 @@ static void load_serial_number(char serial_number[SERIAL_NUMBER_LENGTH]) {
     uint32_t* addresses[4] = {(uint32_t *) 0x008061FC, (uint32_t *) 0x00806010,
                               (uint32_t *) 0x00806014, (uint32_t *) 0x00806018};
     #endif
+    #ifdef SAML21
+    uint32_t* addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
+                              (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
+    #endif
     uint32_t serial_number_idx = 0;
     for (int i = 0; i < 4; i++) {
         serial_number_idx += writeNum(&(serial_number[serial_number_idx]), *(addresses[i]), true);
@@ -468,6 +472,12 @@ void AT91F_InitUSB(void) {
     #define DP_PIN PIN_PA25G_USB_DP
     #define DP_MUX MUX_PA25G_USB_DP
     #endif
+    #ifdef SAML21
+    #define DM_PIN PIN_PA24G_USB_DM
+    #define DM_MUX MUX_PA24G_USB_DM
+    #define DP_PIN PIN_PA25G_USB_DP
+    #define DP_MUX MUX_PA25G_USB_DP
+    #endif
     #ifdef SAMD51
     #define DM_PIN PIN_PA24H_USB_DM
     #define DM_MUX MUX_PA24H_USB_DM
@@ -486,6 +496,10 @@ void AT91F_InitUSB(void) {
     #ifdef SAMD21
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID(6) | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN;
     while (GCLK->STATUS.bit.SYNCBUSY) {}
+    #endif
+    #ifdef SAML21
+    GCLK->PCHCTRL[4].reg = GCLK_PCHCTRL_GEN_GCLK0 | GCLK_PCHCTRL_CHEN;
+    while (GCLK->SYNCBUSY.bit.GENCTRL0) {}
     #endif
     #ifdef SAMD51
     GCLK->PCHCTRL[USB_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);

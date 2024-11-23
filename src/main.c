@@ -87,6 +87,8 @@ extern int8_t led_tick_step;
 
 #if defined(SAMD21)
     #define RESET_CONTROLLER PM
+#elif defined(SAML21)
+    #define RESET_CONTROLLER RSTC
 #elif defined(SAMD51)
     #define RESET_CONTROLLER RSTC
 #endif
@@ -233,7 +235,71 @@ int main(void) {
     // Disable the watchdog, in case the application set it.
     WDT->CTRL.reg = 0;
     while(WDT->STATUS.bit.SYNCBUSY) {}
+#elif defined(SAML21)
+    // Check for voltage too low, and set up brownout protection.
+    // Code largely taken from https://blog.thea.codes/sam-d21-brown-out-detector/ (thanks!)
 
+    // Disable the brown-out detector during configuration, otherwise
+    // it might misbehave and reset the microcontroller.
+    SUPC->BOD33.bit.ENABLE = 0;
+    while (!SUPC->STATUS.bit.B33SRDY) {};
+
+    // Configure the brown-out detector so that the program can use it to watch the power supply voltage.
+    SUPC->BOD33.reg = (
+        // This sets the minimum voltage level to about 2.9V. See datasheet table 37-21.
+        // Voltage threshold is about 1.5V + LEVEL * 34mV. See "Electrical Characteristics" in datasheet.
+        // 39 is about 2.8V, and is a standard measured value in the datasheet.
+        // External flash chips usually require at least 2.7V.
+        SUPC_BOD33_LEVEL(39) |
+        // Since the program is waiting for the voltage to rise,
+        // don't reset the microcontroller if the voltage is too low.
+        SUPC_BOD33_ACTION_NONE |
+        // Enable hysteresis to better deal with noisy power supplies and voltage transients.
+        SUPC_BOD33_HYST);
+
+    // Enable the brown-out detector and then wait for the voltage level to settle.
+    SUPC->BOD33.bit.ENABLE = 1;
+    while (!SUPC->STATUS.bit.BOD33RDY) {}
+
+    // BOD33DET is set when the voltage is *too low*, so wait for it to be cleared.
+    while (SUPC->STATUS.bit.BOD33DET) {}
+
+    // Let the brown-out detector automatically reset the microcontroller if the voltage drops too low.
+    SUPC->BOD33.bit.ENABLE = 0;
+    while (!SUPC->STATUS.bit.B33SRDY) {};
+
+    SUPC->BOD33.reg |= SUPC_BOD33_ACTION_RESET;
+    SUPC->BOD33.bit.ENABLE = 1;
+
+    // If fuses have been reset to all ones, the watchdog ALWAYS-ON is
+    // set, so we can't turn off the watchdog.  Set the fuse to a
+    // reasonable value and reset. This is a mini version of the fuse
+    // reset code in selfmain.c.
+    if (((uint32_t *)NVMCTRL_AUX0_ADDRESS)[0] == 0xffffffff) {
+        // Clear any error flags.
+        NVMCTRL->STATUS.reg |= NVMCTRL_STATUS_MASK;
+        // Turn off cache and put in manual mode.
+        NVMCTRL->CTRLB.reg = NVMCTRL->CTRLB.reg | NVMCTRL_CTRLB_CACHEDIS | NVMCTRL_CTRLB_MANW;
+        // Set address to write.
+        NVMCTRL->ADDR.reg = NVMCTRL_AUX0_ADDRESS / 2;
+        // Erase auxiliary row.
+        NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_EAR;
+	while (!(NVMCTRL->INTFLAG.bit.READY)) {}
+        // Clear page buffer.
+        NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_PBC;
+	while (!(NVMCTRL->INTFLAG.bit.READY)) {}
+        // Reasonable fuse values, including 8k BOOTPROT.
+        ((uint32_t *)NVMCTRL_AUX0_ADDRESS)[0] = 0xD8E0C7FA;
+        ((uint32_t *)NVMCTRL_AUX0_ADDRESS)[1] = 0xFFFFFC5D;
+        // Write the fuses
+	NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_WAP;
+	while (!(NVMCTRL->INTFLAG.bit.READY)) {}
+        resetIntoBootloader();
+    }
+
+    // Disable the watchdog, in case the application set it.
+    WDT->CTRLA.reg = 0;
+    while(WDT->SYNCBUSY.bit.ENABLE) {}
 #elif defined(SAMD51)
     // Disable the watchdog, in case the application set it.
     WDT->CTRLA.reg = 0;

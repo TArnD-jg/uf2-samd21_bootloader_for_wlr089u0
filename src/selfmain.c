@@ -4,6 +4,8 @@
 
 #if defined(SAMD21)
 #define BOOTLOADER_K 8
+#elif defined(SAML21)
+#define BOOTLOADER_K 24// Elvileg 0x6000-nál kezdődik az fő programunk így jött ki a 24
 #elif defined(SAMD51)
 #define BOOTLOADER_K 16
 #endif
@@ -17,6 +19,8 @@ uint8_t bootloader_page_buf[FLASH_ROW_SIZE];
 #define NVM_FUSE_ADDR ((uint32_t *)NVMCTRL_AUX0_ADDRESS)
 #elif defined(SAMD51)
 #define NVM_FUSE_ADDR ((uint32_t *)NVMCTRL_FUSES_BOOTPROT_ADDR)
+#elif defined(SAML21)
+#define NVM_FUSE_ADDR ((uint32_t *)NVMCTRL_AUX0_ADDRESS)
 #endif
 
 static inline void nvmctrl_wait_ready(void) {
@@ -32,6 +36,8 @@ static inline void nvmctrl_set_addr(const uint32_t *addr) {
     NVMCTRL->ADDR.reg = (uint32_t)addr / 2;
 #elif defined(SAMD51)
     NVMCTRL->ADDR.reg = (uint32_t)addr;
+    #elif defined(SAML21)
+    NVMCTRL->ADDR.reg = (uint32_t)addr / 2;
 #endif
 }
 
@@ -51,6 +57,8 @@ void set_fuses_and_bootprot(uint32_t new_bootprot) {
     uint32_t fuses[2];
 #elif defined(SAMD51)
     uint32_t fuses[128];    // 512 bytes (whole user page)
+    #elif defined(SAML21)
+    uint32_t fuses[2];
 #endif
     nvmctrl_wait_ready();
 
@@ -59,6 +67,9 @@ void set_fuses_and_bootprot(uint32_t new_bootprot) {
     // If it appears the fuses page was erased (all ones), replace fuses with reasonable values.
 
 #if defined(SAMD21)
+    bool repair_fuses = (fuses[0] == 0xffffffff ||
+                         fuses[1] == 0xffffffff);
+#elif defined(SAML21)
     bool repair_fuses = (fuses[0] == 0xffffffff ||
                          fuses[1] == 0xffffffff);
 #elif defined(SAMD51)

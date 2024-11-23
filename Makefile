@@ -1,13 +1,12 @@
-BOARD=zero
+BOARD=saml21
 -include Makefile.user
 include boards/$(BOARD)/board.mk
 CC=arm-none-eabi-gcc
-ifeq ($(CHIP_FAMILY), samd21)
-COMMON_FLAGS = -mthumb -mcpu=cortex-m0plus -Os -g -DSAMD21
+
+ifeq ($(CHIP_FAMILY), saml21)
+COMMON_FLAGS = -mthumb -mcpu=cortex-m0plus -Os -g -DSAML21
 endif
-ifeq ($(CHIP_FAMILY), samd51)
-COMMON_FLAGS = -mthumb -mcpu=cortex-m4 -O2 -g -DSAMD51
-endif
+
 WFLAGS = \
 -Werror -Wall -Wstrict-prototypes \
 -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 \
@@ -28,16 +27,12 @@ $(WFLAGS)
 
 UF2_VERSION_BASE = $(shell git describe --dirty --always --tags)
 
-ifeq ($(CHIP_FAMILY), samd21)
-LINKER_SCRIPT=scripts/samd21j18a.ld
-BOOTLOADER_SIZE=8192
-SELF_LINKER_SCRIPT=scripts/samd21j18a_self.ld
-endif
 
-ifeq ($(CHIP_FAMILY), samd51)
-LINKER_SCRIPT=scripts/samd51j19a.ld
-BOOTLOADER_SIZE=16384
-SELF_LINKER_SCRIPT=scripts/samd51j19a_self.ld
+
+ifeq ($(CHIP_FAMILY), saml21)
+LINKER_SCRIPT=scripts/saml21j18b.ld
+BOOTLOADER_SIZE=24576#8192
+SELF_LINKER_SCRIPT=scripts/saml21j18b_self.ld
 endif
 
 LDFLAGS= $(COMMON_FLAGS) \
@@ -51,21 +46,12 @@ INCLUDES += -I./boards/$(BOARD) -Ilib/cmsis/CMSIS/Include -Ilib/usb_msc
 INCLUDES += -I$(BUILD_PATH)
 
 
-ifeq ($(CHIP_FAMILY), samd21)
-INCLUDES += -Ilib/samd21/samd21a/include/
+
+ifeq ($(CHIP_FAMILY), saml21)
+INCLUDES += -Ilib/saml21/saml21b/include/
 endif
 
-ifeq ($(CHIP_FAMILY), samd51)
-ifeq ($(findstring SAME51,$(CHIP_VARIANT)),SAME51)
-INCLUDES += -Ilib/same51/include/
-else
-ifeq ($(findstring SAME54,$(CHIP_VARIANT)),SAME54)
-INCLUDES += -Ilib/same54/include/
-else
-INCLUDES += -Ilib/samd51/include/
-endif
-endif
-endif
+
 
 COMMON_SRC = \
 	src/flash_$(CHIP_FAMILY).c \
@@ -162,6 +148,8 @@ $(EXECUTABLE): $(OBJECTS)
 		 -T$(LINKER_SCRIPT) \
 		 -Wl,-Map,$(BUILD_PATH)/$(NAME).map -o $(BUILD_PATH)/$(NAME).elf $(OBJECTS)
 	arm-none-eabi-objcopy -O binary $(BUILD_PATH)/$(NAME).elf $@
+	#HEX FILE MAKE
+	arm-none-eabi-objcopy -O ihex $(BUILD_PATH)/$(NAME).elf $(BUILD_PATH)/$(NAME).hex
 	@echo
 	-@arm-none-eabi-size $(BUILD_PATH)/$(NAME).elf | awk '{ s=$$1+$$2; print } END { print ""; print "Space left: " ($(BOOTLOADER_SIZE)-s) }'
 	@echo

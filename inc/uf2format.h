@@ -15,7 +15,10 @@
 #define APP_START_ADDRESS 0x00004000
 #define UF2_FAMILY 0x55114460
 #endif
-
+#ifdef SAML21
+#define APP_START_ADDRESS 0x00006000
+#define UF2_FAMILY 0x1851780a
+#endif
 #define UF2_MAGIC_START0 0x0A324655UL // "UF2\n"
 #define UF2_MAGIC_START1 0x9E5D5157UL // Randomly selected
 #define UF2_MAGIC_END 0x0AB16F30UL    // Ditto
