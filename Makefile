@@ -151,7 +151,7 @@ $(EXECUTABLE): $(OBJECTS)
 	#HEX FILE MAKE
 	arm-none-eabi-objcopy -O ihex $(BUILD_PATH)/$(NAME).elf $(BUILD_PATH)/$(NAME).hex
 	@echo
-	-@arm-none-eabi-size $(BUILD_PATH)/$(NAME).elf | awk '{ s=$$1+$$2; print } END { print ""; print "Space left: " ($(BOOTLOADER_SIZE)-s) }'
+	-@arm-none-eabi-size $(BUILD_PATH)/$(NAME).elf | awk '{ s=$$1+$$2+$$3; print } END { print ""; print "Space left: " ($(BOOTLOADER_SIZE)-s) }'
 	@echo
 
 $(BUILD_PATH)/uf2_version.h: Makefile

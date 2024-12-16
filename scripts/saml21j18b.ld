@@ -51,8 +51,6 @@ MEMORY
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
 STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x2000;
 
-/* The heapsize used by the application. NOTE: you need to adjust according to your application. */
-HEAP_SIZE = DEFINED(HEAP_SIZE) ? HEAP_SIZE : DEFINED(__heap_size__) ? __heap_size__ : 0x2000;
 
 /* Section Definitions */
 SECTIONS
@@ -88,6 +86,8 @@ SECTIONS
         KEEP (*(SORT(.ctors.*)))
         KEEP (*crtend.o(.ctors))
 
+        /*
+
         . = ALIGN(4);
         KEEP(*(.fini))
 
@@ -101,6 +101,7 @@ SECTIONS
         KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
+        */
 
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
@@ -140,16 +141,6 @@ SECTIONS
         _ezero = .;
     } > ram
 
-    /* heap section */
-    .heap (NOLOAD):
-    {
-        . = ALIGN(8);
-         _sheap = .;
-        . = . + HEAP_SIZE;
-        . = ALIGN(8);
-        _eheap = .;
-    } > ram
-
     /* stack section */
     .stack (NOLOAD):
     {
@@ -162,5 +153,9 @@ SECTIONS
 
     . = ALIGN(4);
     _end = . ;
-    _ram_end_ = ORIGIN(ram) + LENGTH(ram) - 1 ;
+
+    _binfo_start = 0x00002000 - 4 * 4;
+    .binfo _binfo_start : {
+      KEEP(*(.binfo)) ;
+    } > rom
 }
