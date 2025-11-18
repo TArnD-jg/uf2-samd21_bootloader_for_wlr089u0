@@ -1,12 +1,13 @@
 # Modified UF2 Bootloader Port for WLR089U0
 
-This repository contains an experimental port of the UF2 bootloader to
+This repository contains an experimental port of the UF2 bootloader for
 the SAML21/ATSAMR34 family, tested primarily on WLR089U0 LoRa modules.
 
 > **7.1 Cortex M0+ Processor** 
 > The SAM R34/R35 contains an ATSAML21J18B ARM Cortex-M0+ processor, based on the ARMv6 Architecture and Thumb®-2 ISA. The Cortex-M0+ is 100% instruction set compatible with its predecessor, the Cortex-M0 core, and upward compatible to Cortex-M3 and M4 cores. The implemented ARM Cortex-M0+ is revision r0p1.
 >
 > — *SAM R34/R35 Low Power LoRa® Sub-GHz SiP Datasheet*, DS70005356B, p. 21, Microchip Technology Inc.
+
 
 Original bootloader: <https://github.com/ladyada/uf2-samd21>
 
@@ -34,9 +35,9 @@ or simply:
     make
 
 **Configuration (see `uf2.h`):** - USB CDC + MSC enabled\
-- FAT flash readout enabled\
-- UART disabled\
-- Optional logging\
+- FAT flash readout enabled
+- UART disabled
+- Optional logging
 - May require Windows drivers
 
 ------------------------------------------------------------------------
@@ -45,7 +46,7 @@ or simply:
 
 The bootloader was flashed using:
 
--   **MPLAB IPE v6.05**\
+-   **MPLAB IPE v6.05**
 -   **MPLAB SNAP** programmer
 
 Tools: <https://www.microchip.com/en-us/tools-resources>
@@ -56,18 +57,20 @@ Tools: <https://www.microchip.com/en-us/tools-resources>
 
 ### USB Pins
 
-   Function   MCU Pin
-   ---------- ---------
--  USB DM     PA24
--  USB DP     PA25
+| Function | MCU Pin |
+|----------|---------|
+| USB DM   | PA24    |
+| USB DP   | PA25    |
 
 ### External Flash (W25Q16JVSSIQ)
 
--  Function     - MCU Pin
--  FLASH_CS     - PA23 (pin 23)
--  FLASH_MISO   - PB02 (pin 34)
--  FLASH_MOSI   - PB22 (pin 54)
--  FLASH_SCK    - PB23 (pin 55)
+| Function   | MCU Pin    |
+|------------|------------|
+| FLASH_CS   | PA23 (pin 23) |
+| FLASH_MISO | PB02 (pin 34) |
+| FLASH_MOSI | PB22 (pin 54) |
+| FLASH_SCK  | PB23 (pin 55) |
+
 
 ![Simplified connection diagram](WLR089U0_Connections.png)\
 *Simplified wiring diagram showing external flash and USB connections.*
