@@ -58,12 +58,11 @@ Tools: <https://www.microchip.com/en-us/tools-resources>
 
 ### External Flash (W25Q16JVSSIQ)
 
-   Function     MCU Pin
-   ------------ ---------------
--  FLASH_CS     PA23 (pin 23)
--  FLASH_MISO   PB02 (pin 34)
--  FLASH_MOSI   PB22 (pin 54)
--  FLASH_SCK    PB23 (pin 55)
+-  Function     - MCU Pin
+-  FLASH_CS     - PA23 (pin 23)
+-  FLASH_MISO   - PB02 (pin 34)
+-  FLASH_MOSI   - PB22 (pin 54)
+-  FLASH_SCK    - PB23 (pin 55)
 
 ![Simplified connection diagram](WLR089U0_Connections.png)\
 *Simplified wiring diagram showing external flash and USB connections.*
@@ -97,6 +96,7 @@ This limitation does **not affect functional operation**.
 Licensed under the MIT License.\
 Based on the original bootloader:
 <https://github.com/ladyada/uf2-samd21>
+
 ------------------------------------------------------------------------
 
 ## Warning
