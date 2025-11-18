@@ -26,7 +26,11 @@
  * \asf_license_stop
  *
  */
-
+ /*
+ * Modifications to the original Microchip file:
+ * - Modified on 2024-2025 by Arnold
+ * - Modified void Reset_Handler(void) function.
+ */
 #include "saml21.h"
 
 /* Initialize segments */
@@ -235,7 +239,7 @@ void Reset_Handler(void)
 	/* Set the vector table base address */
 	pSrc      = (uint32_t *)&_sfixed;
 	SCB->VTOR = ((uint32_t)pSrc & SCB_VTOR_TBLOFF_Msk);
-        //SBMATRIX->SFR[SBMATRIX_SLAVE_HMCRAMC0].reg = 2;
+
 #if defined(ID_USB)
         USB->DEVICE.QOSCTRL.bit.CQOS = 2;
         USB->DEVICE.QOSCTRL.bit.DQOS = 2;

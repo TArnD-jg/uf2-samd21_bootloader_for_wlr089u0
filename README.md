@@ -1,3 +1,112 @@
+# Modified UF2 Bootloader Port for WLR089U0
+
+This repository contains an experimental port of the UF2 bootloader to
+the SAML21 family, tested primarily on WLR089U0 LoRa modules.
+
+Original bootloader: <https://github.com/ladyada/uf2-samd21>
+
+The port is based largely on the SAMD21 implementation from the original
+project.\
+Tested hardware: **WLR089U0** modules purchased from ChipCAD:\
+<https://www.chipcad.hu/hu/product/rf-products-lorawan-eszkozok-s-fejleszti-microchip/wlr089-bo-szerelt--LOR108>
+
+> **Note:**\
+> This is an experimental build. It supports **USB only** --- UART/USART
+> bootloading is not implemented.\
+> Unlike the original project, updating the bootloader via
+> `update-bootloader*.uf2` is **not supported**.\
+> For setting up the development environment, follow the requirements in
+> the original documentation.
+
+------------------------------------------------------------------------
+
+## Build
+
+    make BOARD=WLR089U0
+
+or simply:
+
+    make
+
+**Configuration (see `uf2.h`):** - USB CDC + MSC enabled\
+- FAT flash readout enabled\
+- UART disabled\
+- Optional logging\
+- May require Windows drivers
+
+------------------------------------------------------------------------
+
+## Flashing the Bootloader
+
+The bootloader was flashed using:
+
+-   **MPLAB IPE v6.05**\
+-   **MPLAB SNAP** programmer
+
+Tools: <https://www.microchip.com/en-us/tools-resources>
+
+------------------------------------------------------------------------
+
+## Hardware Connections
+
+### USB Pins
+
+  Function   MCU Pin
+  ---------- ---------
+  USB DM     PA24
+  USB DP     PA25
+
+### External Flash (W25Q16JVSSIQ)
+
+  Function     MCU Pin
+  ------------ ---------------
+  FLASH_CS     PA23 (pin 23)
+  FLASH_MISO   PB02 (pin 34)
+  FLASH_MOSI   PB22 (pin 54)
+  FLASH_SCK    PB23 (pin 55)
+
+![Simplified connection diagram](WLR089U0_Connections.png)\
+*Simplified wiring diagram showing external flash and USB connections.*
+
+The original bootloader LED blink indicator has been removed.
+
+------------------------------------------------------------------------
+
+## Memory Layout / Boot Protection
+
+The UF2 application must start at:
+
+    0x00006000
+
+because the bootloader occupies the first **24 kB** of flash
+(`0x00000000–0x00005FFF`).
+
+> **Warning:**\
+> The SAML21 BOOTPROT fuse can only protect predefined regions.\
+> Only the **first 8 kB** is hardware-protected; the full 24 kB
+> bootloader region **cannot** be protected.
+
+Reference: *SAM L21 Family Data Sheet -- NVMCTRL, p. 446.*
+
+This limitation does **not affect functional operation**.
+
+------------------------------------------------------------------------
+
+## License
+
+Licensed under the MIT License.\
+Based on the original bootloader:
+<https://github.com/ladyada/uf2-samd21>
+------------------------------------------------------------------------
+
+## Warning
+
+This project is no longer maintained and will not be continued. 
+It is provided as is, without any guarantee of stability or completeness. 
+Use it at your own risk.
+
+
+# Original README.md starts
 # UF2 Bootloader
 
 This repository contains a bootloader, derived from Atmel's SAM-BA,
@@ -186,7 +295,7 @@ then CDC might work and MSC will not work;
 otherwise, if you have no drivers, MSC will work, and CDC will work on Windows 10 only.
 Thus, it's best to set the USB ID to one for which there are no drivers.
 
-The bootloader sits at 0x00000000, and the application starts at 0x00002000 (SAMD21) or 0x00004000 (SAMD51) or 0x00006000 (SAML21).
+The bootloader sits at 0x00000000, and the application starts at 0x00002000 (SAMD21) or 0x00004000 (SAMD51).
 
 ## Code of Conduct
 

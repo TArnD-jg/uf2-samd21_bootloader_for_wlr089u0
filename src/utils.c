@@ -1,21 +1,13 @@
 #include "uf2.h"
-#include "neopixel.h"
+
 
 static uint32_t timerLow;
 uint32_t timerHigh, resetHorizon;
 
 void delay(uint32_t ms) {
-// SAMD21 starts up at 1mhz by default.
-#ifdef SAMD21
-    ms <<= 8;
-#endif
 // SAML21 starts up at 1mhz by default.
 #ifdef SAML21
     ms <<= 8;
-#endif
-// SAMD51 starts up at 48mhz by default.
-#ifdef SAMD51
-    ms <<= 12;
 #endif
     for (int i = 1; i < ms; ++i) {
         asm("nop");

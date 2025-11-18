@@ -1,7 +1,7 @@
 #include "uf2.h"
 volatile bool g_interrupt_enabled = true;
 
-// SAMD21 starts at 1MHz by default.
+// SAML21 starts at 1MHz by default.
 uint32_t current_cpu_frequency_MHz = 1;
 void system_init(void) {
     __disable_irq();

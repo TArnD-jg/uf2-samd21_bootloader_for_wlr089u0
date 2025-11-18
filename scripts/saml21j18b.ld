@@ -1,47 +1,44 @@
 /**
  * \file
  *
- * \brief GCC linker script (flash) for WLR089U0
+ * \brief Linker script for running in internal FLASH on the SAML21J18B
  *
- * Copyright (c) 2022 Microchip Technology Inc.
+ * Copyright (c) 2018 Microchip Technology Inc.
  *
- * \license_start
+ * \asf_license_start
  *
  * \page License
  *
  * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the Licence at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * \license_stop
+ * \asf_license_stop
  *
  */
-
-/*------------------------------------------------------------------------------
- *      Linker script for running in internal FLASH on the WLR089U0
- *----------------------------------------------------------------------------*/
+ /*
+ * Modifications to the original Microchip file:
+ * - Modified on 2024-2025 by Arnold
+ * - Modified File name
+ * - Deleted line:  lpram    (rwx) : ORIGIN = 0x30000000, LENGTH = 0x00002000
+ */
+ 
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 SEARCH_DIR(.)
 
-/*************************************************************************
- * Memory-Region Definitions
- * You may define these as options to the linker when calling 
- * the linker via the arm-gcc shell.
- * ie. '-Wl,--defsym=<memory_type>_ORIGIN=<address>'
- * and/or '-Wl,--defsym=<memory_type>_LENGTH=<size>'
- *************************************************************************/
+/* Memory Spaces Definitions */
 MEMORY
 {
   rom      (rx)  : ORIGIN = 0x00000000, LENGTH = 0x00006000
@@ -50,7 +47,6 @@ MEMORY
 
 /* The stack size used by the application. NOTE: you need to adjust according to your application. */
 STACK_SIZE = DEFINED(STACK_SIZE) ? STACK_SIZE : DEFINED(__stack_size__) ? __stack_size__ : 0x2000;
-
 
 /* Section Definitions */
 SECTIONS
@@ -86,8 +82,6 @@ SECTIONS
         KEEP (*(SORT(.ctors.*)))
         KEEP (*crtend.o(.ctors))
 
-        /*
-
         . = ALIGN(4);
         KEEP(*(.fini))
 
@@ -101,7 +95,6 @@ SECTIONS
         KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
         KEEP (*(SORT(.dtors.*)))
         KEEP (*crtend.o(.dtors))
-        */
 
         . = ALIGN(4);
         _efixed = .;            /* End of text section */
@@ -128,6 +121,15 @@ SECTIONS
         _erelocate = .;
     } > ram
 
+    .lpram (NOLOAD):
+    {
+        . = ALIGN(8);
+        _slpram = .;
+        *(.lpram .lpram.*);
+        . = ALIGN(8);
+        _elpram = .;
+    } > lpram
+
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :
     {
@@ -153,9 +155,4 @@ SECTIONS
 
     . = ALIGN(4);
     _end = . ;
-
-    _binfo_start = 0x00002000 - 4 * 4;
-    .binfo _binfo_start : {
-      KEEP(*(.binfo)) ;
-    } > rom
 }

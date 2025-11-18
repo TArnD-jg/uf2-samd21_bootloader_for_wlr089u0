@@ -12,12 +12,7 @@
 #define CFG_PIN_BTN_SLIDE 6
 #define CFG_PIN_DOTSTAR_CLOCK 7
 #define CFG_PIN_DOTSTAR_DATA 8
-#if defined(SAMD21)||(SAMD51)
-#define CFG_PIN_FLASH_CS 9
-#define CFG_PIN_FLASH_MISO 10
-#define CFG_PIN_FLASH_MOSI 11
-#define CFG_PIN_FLASH_SCK 12
-#elif defined(SAML21)
+#if defined(SAML21)
 #define CFG_PIN_FLASH_CS 23//PA23
 #define CFG_PIN_FLASH_MISO 34//PB02
 #define CFG_PIN_FLASH_MOSI 54//PB22

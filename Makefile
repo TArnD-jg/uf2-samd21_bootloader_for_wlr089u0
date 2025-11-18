@@ -1,4 +1,4 @@
-BOARD=saml21
+BOARD=WLR089U0
 -include Makefile.user
 include boards/$(BOARD)/board.mk
 CC=arm-none-eabi-gcc
@@ -31,8 +31,7 @@ UF2_VERSION_BASE = $(shell git describe --dirty --always --tags)
 
 ifeq ($(CHIP_FAMILY), saml21)
 LINKER_SCRIPT=scripts/saml21j18b.ld
-BOOTLOADER_SIZE=24576#8192
-SELF_LINKER_SCRIPT=scripts/saml21j18b_self.ld
+BOOTLOADER_SIZE=24576
 endif
 
 LDFLAGS= $(COMMON_FLAGS) \
@@ -58,7 +57,6 @@ COMMON_SRC = \
 	src/init_$(CHIP_FAMILY).c \
 	src/startup_$(CHIP_FAMILY).c \
 	src/usart_sam_ba.c \
-	src/screen.c \
 	src/images.c \
 	src/utils.c
 
@@ -71,20 +69,16 @@ SOURCES = $(COMMON_SRC) \
 	src/uart_driver.c \
 	src/hid.c \
 
-SELF_SOURCES = $(COMMON_SRC) \
-	src/selfmain.c
-
 OBJECTS = $(patsubst src/%.c,$(BUILD_PATH)/%.o,$(SOURCES))
-SELF_OBJECTS = $(patsubst src/%.c,$(BUILD_PATH)/%.o,$(SELF_SOURCES)) $(BUILD_PATH)/selfdata.o
+
 
 NAME=bootloader-$(BOARD)-$(UF2_VERSION_BASE)
 EXECUTABLE=$(BUILD_PATH)/$(NAME).bin
-SELF_EXECUTABLE=$(BUILD_PATH)/update-$(NAME).uf2
-SELF_EXECUTABLE_INO=$(BUILD_PATH)/update-$(NAME).ino
+
 
 SUBMODULES = lib/uf2/README.md
 
-all: $(SUBMODULES) dirs $(EXECUTABLE) $(SELF_EXECUTABLE)
+all: $(SUBMODULES) dirs $(EXECUTABLE) 
 
 r: run
 b: burn
@@ -136,9 +130,6 @@ wait:
 logs:
 	node scripts/dbgtool.js $(BUILD_PATH)/$(NAME).map
 
-selflogs:
-	node scripts/dbgtool.js $(BUILD_PATH)/update-$(NAME).map
-
 dirs:
 	@echo "Building $(BOARD)"
 	-@mkdir -p $(BUILD_PATH)
@@ -157,13 +148,6 @@ $(EXECUTABLE): $(OBJECTS)
 $(BUILD_PATH)/uf2_version.h: Makefile
 	echo "#define UF2_VERSION_BASE \"$(UF2_VERSION_BASE)\""> $@
 
-$(SELF_EXECUTABLE): $(SELF_OBJECTS)
-	$(CC) -L$(BUILD_PATH) $(LDFLAGS) \
-		 -T$(SELF_LINKER_SCRIPT) \
-		 -Wl,-Map,$(BUILD_PATH)/update-$(NAME).map -o $(BUILD_PATH)/update-$(NAME).elf $(SELF_OBJECTS)
-	arm-none-eabi-objcopy -O binary $(BUILD_PATH)/update-$(NAME).elf $(BUILD_PATH)/update-$(NAME).bin
-	python3 lib/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $(BUILD_PATH)/update-$(NAME).bin
-
 $(BUILD_PATH)/%.o: src/%.c $(wildcard inc/*.h boards/*/*.h) $(BUILD_PATH)/uf2_version.h
 	echo "$<"
 	$(CC) $(CFLAGS) $(BLD_EXTA_FLAGS) $(INCLUDES) $< -o $@
@@ -171,8 +155,6 @@ $(BUILD_PATH)/%.o: src/%.c $(wildcard inc/*.h boards/*/*.h) $(BUILD_PATH)/uf2_ve
 $(BUILD_PATH)/%.o: $(BUILD_PATH)/%.c
 	$(CC) $(CFLAGS) $(BLD_EXTA_FLAGS) $(INCLUDES) $< -o $@
 
-$(BUILD_PATH)/selfdata.c: $(EXECUTABLE) scripts/gendata.py src/sketch.cpp
-	python3 scripts/gendata.py $(BOOTLOADER_SIZE) $(EXECUTABLE)
 
 clean:
 	rm -rf build
@@ -197,19 +179,14 @@ drop-board: all
 	mkdir -p build/drop
 	rm -rf build/drop/$(BOARD)
 	mkdir -p build/drop/$(BOARD)
-	cp $(SELF_EXECUTABLE) build/drop/$(BOARD)/
 	cp $(EXECUTABLE) build/drop/$(BOARD)/
-# .ino works only for SAMD21 right now; suppress for SAMD51
-ifeq ($(CHIP_FAMILY),samd21)
-	cp $(SELF_EXECUTABLE_INO) build/drop/$(BOARD)/
-	cp boards/$(BOARD)/board_config.h build/drop/$(BOARD)/
-endif
+
 
 drop-pkg:
-	mv build/drop build/uf2-samd21-$(UF2_VERSION_BASE)
-	cp bin-README.md build/uf2-samd21-$(UF2_VERSION_BASE)/README.md
-	cd build; 7z a uf2-samd21-$(UF2_VERSION_BASE).zip uf2-samd21-$(UF2_VERSION_BASE)
-	rm -rf build/uf2-samd21-$(UF2_VERSION_BASE)
+	mv build/drop build/uf2-saml21-$(UF2_VERSION_BASE)
+	cp bin-README.md build/uf2-saml21-$(UF2_VERSION_BASE)/README.md
+	cd build; 7z a uf2-saml21-$(UF2_VERSION_BASE).zip uf2-saml21-$(UF2_VERSION_BASE)
+	rm -rf build/uf2-saml21-$(UF2_VERSION_BASE)
 
 all-boards:
 	for f in `cd boards; ls` ; do "$(MAKE)" BOARD=$$f drop-board || break -1; done
