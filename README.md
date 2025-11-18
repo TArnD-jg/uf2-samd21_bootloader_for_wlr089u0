@@ -1,7 +1,12 @@
 # Modified UF2 Bootloader Port for WLR089U0
 
 This repository contains an experimental port of the UF2 bootloader to
-the SAML21 family, tested primarily on WLR089U0 LoRa modules.
+the SAML21/ATSAMR34 family, tested primarily on WLR089U0 LoRa modules.
+
+> **7.1 Cortex M0+ Processor** 
+> The SAM R34/R35 contains an ATSAML21J18B ARM Cortex-M0+ processor, based on the ARMv6 Architecture and Thumb®-2 ISA. The Cortex-M0+ is 100% instruction set compatible with its predecessor, the Cortex-M0 core, and upward compatible to Cortex-M3 and M4 cores. The implemented ARM Cortex-M0+ is revision r0p1.
+>
+> — *SAM R34/R35 Low Power LoRa® Sub-GHz SiP Datasheet*, DS70005356B, p. 21, Microchip Technology Inc.
 
 Original bootloader: <https://github.com/ladyada/uf2-samd21>
 
