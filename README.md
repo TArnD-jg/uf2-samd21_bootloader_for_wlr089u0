@@ -51,19 +51,19 @@ Tools: <https://www.microchip.com/en-us/tools-resources>
 
 ### USB Pins
 
-  Function   MCU Pin
-  ---------- ---------
-  USB DM     PA24
-  USB DP     PA25
+   Function   MCU Pin
+   ---------- ---------
+-  USB DM     PA24
+-  USB DP     PA25
 
 ### External Flash (W25Q16JVSSIQ)
 
-  Function     MCU Pin
-  ------------ ---------------
-  FLASH_CS     PA23 (pin 23)
-  FLASH_MISO   PB02 (pin 34)
-  FLASH_MOSI   PB22 (pin 54)
-  FLASH_SCK    PB23 (pin 55)
+   Function     MCU Pin
+   ------------ ---------------
+-  FLASH_CS     PA23 (pin 23)
+-  FLASH_MISO   PB02 (pin 34)
+-  FLASH_MOSI   PB22 (pin 54)
+-  FLASH_SCK    PB23 (pin 55)
 
 ![Simplified connection diagram](WLR089U0_Connections.png)\
 *Simplified wiring diagram showing external flash and USB connections.*
