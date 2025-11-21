@@ -25,6 +25,10 @@ Tested hardware: **WLR089U0** modules purchased from ChipCAD:\
 > the original documentation.
 
 ------------------------------------------------------------------------
+### Build Environment
+
+Built with: **arm-none-eabi-gcc 7.2.1**
+(GNU Tools for Arm Embedded Processors 7-2017-q4-major)
 
 ## Build
 
@@ -34,7 +38,8 @@ or simply:
 
     make
 
-**Configuration (see `uf2.h`):** - USB CDC + MSC enabled\
+**Configuration (see `uf2.h`):** 
+- USB CDC + MSC enabled
 - FAT flash readout enabled
 - UART disabled
 - Optional logging
@@ -81,7 +86,7 @@ The original bootloader LED blink indicator has been removed.
 
 ## Memory Layout / Boot Protection
 
-The UF2 application must start at:
+The UF2 application **must** start at:
 
     0x00006000
 
